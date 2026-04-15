@@ -2,9 +2,7 @@ services:
   blockchain-node:
     image: ghcr.io/foundry-rs/foundry:latest
     entrypoint: anvil
-    command: ["--host", "0.0.0.0", "--port", "8545"]
-    ports:
-      - "8545:8545"
+    command: [ "--host", "0.0.0.0", "--port", "8545" ]
     restart: always
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8545" ]
@@ -30,8 +28,6 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
-    ports:
-      - "9090:9090"
     restart: always
 
   alertmanager:
@@ -40,8 +36,6 @@ services:
       - ./alertmanager:/etc/alertmanager
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
-    ports:
-      - "9093:9093"
     restart: always
 
   grafana:
