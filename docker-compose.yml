@@ -1,0 +1,65 @@
+services:
+  blockchain-node:
+    image: ghcr.io/foundry-rs/foundry:latest
+    entrypoint: anvil
+    command: ["--host", "0.0.0.0", "--port", "8545"]
+    ports:
+      - "8545:8545"
+    restart: always
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8545" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  rpc-checker:
+    build:
+      context: ./scripts
+      dockerfile: Dockerfile
+    environment:
+      - RPC_URL=http://blockchain-node:8545
+      - CHECK_INTERVAL_SECONDS=5
+    restart: always
+    depends_on:
+      - blockchain-node
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    restart: always
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    volumes:
+      - ./alertmanager:/etc/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+    ports:
+      - "9093:9093"
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/dashboards
+    ports:
+      - "3000:3000"
+    restart: always
+    depends_on:
+      - prometheus
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    command:
+      - '--path.rootfs=/host'
+    pid: host
+    restart: always
+    volumes:
+      - '/:/host:ro,rslave'

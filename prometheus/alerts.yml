@@ -1,0 +1,38 @@
+groups:
+  - name: node_alerts
+    rules:
+      - alert: NodeProcessDown
+        expr: up{job="rpc-checker"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RPC Checker container is down"
+          description: "The custom RPC checking container has been unreachable for 1 minute."
+
+      - alert: RPCEndpointDown
+        expr: rpc_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Blockchain RPC is unresponsive"
+          description: "The blockchain node is either down or not responding to RPC ping for 1m."
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host CPU Usage is high"
+          description: "Average CPU usage is > 85% for 5m across the host."
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host Memory usage is high"
+          description: "Host is using > 85% of memory for 5m."
