@@ -4,11 +4,10 @@ services:
     container_name: nethermind
     restart: unless-stopped
     ports:
-      - "30303:30303/tcp"               # P2P — must be public for peer discovery
+      - "30303:30303/tcp"               # P2P
       - "30303:30303/udp"
-      - "127.0.0.1:8545:8545"           # RPC — localhost only, access via SSH tunnel
-    # 8551 (Engine API) and 8008 (metrics) are NOT published.
-    # Lighthouse reaches 8551 via the Docker network; Prometheus reaches 8008 the same way.
+      - "127.0.0.1:8545:8545"           # RPC
+    # 8551 (Engine API) and 8008 (metrics)
     volumes:
       - ./data/nethermind:/data
       - ./jwtsecret:/jwtsecret:ro
@@ -29,9 +28,10 @@ services:
     container_name: lighthouse
     restart: unless-stopped
     ports:
-      - "9000:9000/tcp"                 # P2P — must be public for peer discovery
+      - "9000:9000/tcp"                 # P2P
       - "9000:9000/udp"
-    # 5054 (metrics) is NOT published — Prometheus reaches it via Docker network
+      - "127.0.0.1:5052:5052"          # Beacon API
+    # 5054 (metrics)
     volumes:
       - ./data/lighthouse:/data
       - ./jwtsecret:/jwtsecret:ro
@@ -56,54 +56,54 @@ services:
     restart: unless-stopped
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus-data:/prometheus      # persistent — survives container recreation
+      - prometheus-data:/prometheus
     ports:
-      - "127.0.0.1:9090:9090"           # localhost only
+      - "127.0.0.1:9090:9090"           # UI
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.enable-remote-write-receiver'
 
   tempo:
-    image: grafana/tempo:2.10.5           # latest stable — was a dev commit hash
+    image: grafana/tempo:2.10.5
     container_name: tempo
     restart: unless-stopped
     command: [ "-config.file=/etc/tempo.yaml" ]
     volumes:
       - ./tempo/tempo.yaml:/etc/tempo.yaml:ro
-      - tempo-data:/var/tempo            # persistent — survives container recreation
+      - tempo-data:/var/tempo
     ports:
-      - "127.0.0.1:3200:3200"           # localhost only
-      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:3200:3200" #http
+      - "127.0.0.1:4317:4317" #otlp gRPC
 
   grafana:
-    image: grafana/grafana:13.0.1         # latest stable — was a nightly CI build tag
+    image: grafana/grafana:13.0.1
     container_name: grafana
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3000:3000"           # localhost only — use 'make tunnel' to access
+      - "127.0.0.1:3000:3000" # UI
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_ADMIN_PASSWORD:-admin123}
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards:/etc/grafana/dashboards:ro
 
   alertmanager:
-    image: prom/alertmanager:v0.32.1   # pin
+    image: prom/alertmanager:v0.32.1
     container_name: alertmanager
     restart: unless-stopped
     ports:
-      - "127.0.0.1:9093:9093"           # localhost only
+      - "127.0.0.1:9093:9093" # UI and API
     volumes:
       - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
-      - alertmanager-data:/alertmanager  # persistent — retains alert silence/state
+      - alertmanager-data:/alertmanager
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
 
   node-exporter:
-    image: prom/node-exporter:v1.11.1     # pin
+    image: prom/node-exporter:v1.11.1
     container_name: node-exporter
     restart: unless-stopped
     command:
@@ -117,13 +117,20 @@ services:
       - /:/rootfs:ro
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.51.0  # already pinned
+    image: gcr.io/cadvisor/cadvisor:v0.51.0
     container_name: cadvisor
     restart: unless-stopped
-    privileged: true                     # required to read kernel cgroup metrics
+    privileged: true
+    command:
+      - '--docker_only=true'
+      - '--store_container_labels=true'
+      - '--disable_root_cgroup_stats=true'
+      - '--housekeeping_interval=30s'
+      - '--docker=unix:///var/run/docker.sock'
+      - '--raw_cgroup_prefix_whitelist=/docker/'
     volumes:
       - /:/rootfs:ro
-      - /var/run:/var/run:ro
+      - /var/run:/var/run
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro

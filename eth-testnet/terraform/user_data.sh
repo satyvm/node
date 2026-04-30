@@ -1,7 +1,14 @@
 #!/bin/bash
+set -euo pipefail
 curl -fsSL https://get.docker.com | sh
 usermod -aG docker ubuntu
-sleep 20
+# Wait for Docker daemon to be fully ready (socket accepting commands)
+for i in $(seq 1 30); do
+    docker info >/dev/null 2>&1 && break
+    echo "Waiting for Docker daemon... ($i/30)"
+    sleep 2
+done
+docker info >/dev/null 2>&1 || { echo "ERROR: Docker daemon failed to start." >&2; exit 1; }
 
 # ---------------------------------------------------------------------------
 # Identify the data disk safely.
@@ -33,10 +40,8 @@ if [ -n "$DATA_VOL" ]; then
     UUID=$(blkid -s UUID -o value "$DATA_VOL")
     echo "UUID=$UUID /mnt/ethereum ext4 defaults,nofail 0 2" >> /etc/fstab
 
-    mkdir -p /mnt/ethereum/nethermind
-    mkdir -p /mnt/ethereum/lighthouse
-    mkdir -p /mnt/ethereum/grafana-data
     chown -R ubuntu:ubuntu /mnt/ethereum
 else
     echo "ERROR: Could not find an unformatted data volume. Aborting disk setup." >&2
+    exit 1
 fi
