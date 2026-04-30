@@ -1,0 +1,135 @@
+services:
+  execution:
+    image: nethermind/nethermind:1.37.1
+    container_name: nethermind
+    restart: unless-stopped
+    ports:
+      - "30303:30303/tcp"               # P2P — must be public for peer discovery
+      - "30303:30303/udp"
+      - "127.0.0.1:8545:8545"           # RPC — localhost only, access via SSH tunnel
+    # 8551 (Engine API) and 8008 (metrics) are NOT published.
+    # Lighthouse reaches 8551 via the Docker network; Prometheus reaches 8008 the same way.
+    volumes:
+      - ./data/nethermind:/data
+      - ./jwtsecret:/jwtsecret:ro
+    command: >
+      --config=sepolia
+      --datadir=/data
+      --JsonRpc.Enabled=true
+      --JsonRpc.Host=0.0.0.0
+      --JsonRpc.Port=8545
+      --JsonRpc.EngineHost=0.0.0.0
+      --JsonRpc.EnginePort=8551
+      --JsonRpc.JwtSecretFile=/jwtsecret
+      --Metrics.Enabled=true
+      --Metrics.ExposePort=8008
+
+  consensus:
+    image: sigp/lighthouse:v8.1.3
+    container_name: lighthouse
+    restart: unless-stopped
+    ports:
+      - "9000:9000/tcp"                 # P2P — must be public for peer discovery
+      - "9000:9000/udp"
+    # 5054 (metrics) is NOT published — Prometheus reaches it via Docker network
+    volumes:
+      - ./data/lighthouse:/data
+      - ./jwtsecret:/jwtsecret:ro
+    command: >
+      lighthouse bn
+      --network=sepolia
+      --datadir=/data
+      --execution-endpoint=http://execution:8551
+      --execution-jwt=/jwtsecret
+      --checkpoint-sync-url=https://checkpoint-sync.sepolia.ethpandaops.io
+      --http
+      --http-address=0.0.0.0
+      --metrics
+      --metrics-address=0.0.0.0
+      --metrics-port=5054
+    depends_on:
+      - execution
+
+  prometheus:
+    image: prom/prometheus:v3
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus      # persistent — survives container recreation
+    ports:
+      - "127.0.0.1:9090:9090"           # localhost only
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-remote-write-receiver'
+
+  tempo:
+    image: grafana/tempo:2.10.5           # latest stable — was a dev commit hash
+    container_name: tempo
+    restart: unless-stopped
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./tempo/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo-data:/var/tempo            # persistent — survives container recreation
+    ports:
+      - "127.0.0.1:3200:3200"           # localhost only
+      - "127.0.0.1:4317:4317"
+
+  grafana:
+    image: grafana/grafana:13.0.1         # latest stable — was a nightly CI build tag
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"           # localhost only — use 'make tunnel' to access
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/etc/grafana/dashboards:ro
+
+  alertmanager:
+    image: prom/alertmanager:v0.32.1   # pin
+    container_name: alertmanager
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9093:9093"           # localhost only
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager  # persistent — retains alert silence/state
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+
+  node-exporter:
+    image: prom/node-exporter:v1.11.1     # pin
+    container_name: node-exporter
+    restart: unless-stopped
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.51.0  # already pinned
+    container_name: cadvisor
+    restart: unless-stopped
+    privileged: true                     # required to read kernel cgroup metrics
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+
+volumes:
+  grafana-data:
+  prometheus-data:
+  tempo-data:
+  alertmanager-data:

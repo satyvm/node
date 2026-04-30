@@ -1,0 +1,6 @@
+# Secrets — never commit these
+.env
+jwtsecret
+
+# Generated artifacts
+data/
