@@ -82,9 +82,3 @@ sync-status: ## Check Nethermind + Lighthouse sync progress
 	@echo "🗼 Lighthouse beacon sync:"
 	@ssh -i $(SSH_KEY) ubuntu@$(IP) \
 		'curl -sf http://localhost:5052/eth/v1/node/syncing | python3 -m json.tool'
-
-prometheus-targets: ## Show Prometheus scrape target health (UP / DOWN per job)
-	@if [ -z "$(IP)" ]; then echo "❌ No active deployment found."; exit 1; fi
-	@ssh -i $(SSH_KEY) ubuntu@$(IP) \
-		'curl -sf http://localhost:9090/api/v1/targets | python3 -c \
-		"import sys,json; [print(x[\"labels\"][\"job\"], x[\"health\"], x.get(\"lastError\",\"\")) for x in json.load(sys.stdin)[\"data\"][\"activeTargets\"]]"'

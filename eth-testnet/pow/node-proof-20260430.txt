@@ -1,0 +1,28 @@
+CONTAINER ID   IMAGE                              COMMAND                  CREATED        STATUS                  PORTS                                                                                                                                  NAMES
+35cfc7c75681   gcr.io/cadvisor/cadvisor:v0.51.0   "/usr/bin/cadvisor -…"   11 hours ago   Up 11 hours (healthy)   8080/tcp                                                                                                                               cadvisor
+0b928c615165   grafana/grafana:13.0.1             "/run.sh"                13 hours ago   Up 13 hours             127.0.0.1:3000->3000/tcp                                                                                                               grafana
+aadecff2e984   sigp/lighthouse:v8.1.3             "lighthouse bn --net…"   13 hours ago   Up 13 hours             127.0.0.1:5052->5052/tcp, 0.0.0.0:9000->9000/tcp, 0.0.0.0:9000->9000/udp, [::]:9000->9000/tcp, [::]:9000->9000/udp                     lighthouse
+e5c2a271a919   nethermind/nethermind:1.37.1       "./entrypoint.sh --c…"   15 hours ago   Up 15 hours             127.0.0.1:8545->8545/tcp, 8551/tcp, 0.0.0.0:30303->30303/tcp, 0.0.0.0:30303->30303/udp, [::]:30303->30303/tcp, [::]:30303->30303/udp   nethermind
+a1cccc0d54d0   prom/node-exporter:v1.11.1         "/bin/node_exporter …"   15 hours ago   Up 15 hours             9100/tcp                                                                                                                               node-exporter
+813c2e3585ed   grafana/tempo:2.10.5               "/tempo -config.file…"   15 hours ago   Up 15 hours             127.0.0.1:3200->3200/tcp, 127.0.0.1:4317->4317/tcp                                                                                     tempo
+fed89b171e60   prom/prometheus:v3                 "/bin/prometheus --c…"   15 hours ago   Up 15 hours             127.0.0.1:9090->9090/tcp                                                                                                               prometheus
+66dd81bd4a52   prom/alertmanager:v0.32.1          "/bin/alertmanager -…"   15 hours ago   Up 15 hours             127.0.0.1:9093->9093/tcp                                                                                                               alertmanager
+---
+{
+    "data": {
+        "is_syncing": false,
+        "is_optimistic": false,
+        "el_offline": false,
+        "head_slot": "10153440",
+        "sync_distance": "1"
+    }
+}
+{
+    "jsonrpc": "2.0",
+    "result": {
+        "startingBlock": "0x0",
+        "currentBlock": "0xa43e62",
+        "highestBlock": "0xa43e63"
+    },
+    "id": 1
+}
