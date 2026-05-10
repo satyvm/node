@@ -156,6 +156,7 @@ This project has been successfully deployed and verified. Below are snapshots de
 
 ### Network Architecture
 You can view the detailed network architecture diagram here: [Network Architecture Diagram](./network.excalidraw)
+![Network Architecture](./network_architecture.png)
 
 ### Node Status & Sync
 - **Docker Status (`make status`)**
