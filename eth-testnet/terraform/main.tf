@@ -82,15 +82,28 @@ resource "aws_instance" "ethereum_node" {
     volume_type = "gp3"
   }
 
-  ebs_block_device {
-    device_name = "/dev/sdf"
-    volume_size = var.volume_size
-    volume_type = "gp3"
-  }
-
   user_data = file("${path.module}/user_data.sh")
 
   tags = {
-    Name = "Ethereum Node (Sepolia)"
+    Name = "Ethereum Node (Ephemery)"
   }
+}
+
+resource "aws_ebs_volume" "ethereum_data" {
+  availability_zone = aws_instance.ethereum_node.availability_zone
+  size              = var.volume_size
+  type              = "gp3"
+  snapshot_id       = var.data_volume_snapshot_id
+  iops              = var.data_volume_iops
+  throughput        = var.data_volume_throughput
+
+  tags = {
+    Name = "Ethereum Node Data (Ephemery)"
+  }
+}
+
+resource "aws_volume_attachment" "ethereum_data" {
+  device_name = var.data_volume_device_name
+  volume_id   = aws_ebs_volume.ethereum_data.id
+  instance_id = aws_instance.ethereum_node.id
 }

@@ -5,13 +5,13 @@
 
 ## Overview
 
-The goal is to build a production-grade blockchain node infrastructure that demonstrates real SRE engineering: not just getting a node running, but building the reliability, observability, automation, and resilience systems around it that make it trustworthy at scale. The stack is Ethereum (Sepolia testnet) using Nethermind as the execution client and Lighthouse as the consensus client.
+The goal is to build a production-grade blockchain node infrastructure that demonstrates real SRE engineering: not just getting a node running, but building the reliability, observability, automation, and resilience systems around it that make it trustworthy at scale. The stack is Ethereum (Ephemery testnet) using Nethermind as the execution client and Lighthouse as the consensus client.
 
 **Why Nethermind over Geth:** Faster snap sync in practice, more aggressive pruning by default, better memory efficiency on smaller instances, and strong metrics support out of the box.
 
 **Why Lighthouse:** Written in Rust, lowest memory footprint among consensus clients, and excellent checkpoint sync support that gets you to chain head in minutes rather than days.
 
-**Why Sepolia:** Full mainnet sync takes days and hundreds of GB. Sepolia has identical architecture to mainnet but is practical for a lab environment.
+**Why Ephemery:** Ephemery is purpose-built for validator and infrastructure rehearsal, with regular resets that force you to treat node state and recovery as operational concerns instead of one-time setup.
 
 ---
 
@@ -78,7 +78,7 @@ services:
       - /mnt/ethereum/nethermind:/data
       - /mnt/ethereum/jwtsecret:/jwtsecret:ro
     command: >
-      --config=sepolia
+      --Init.ChainSpecPath=/network/genesis.json
       --datadir=/data
       --JsonRpc.Enabled=true
       --JsonRpc.Host=0.0.0.0
@@ -102,11 +102,11 @@ services:
       - /mnt/ethereum/jwtsecret:/jwtsecret:ro
     command: >
       lighthouse bn
-      --network=sepolia
+      --testnet-dir=/network
       --datadir=/data
       --execution-endpoint=http://execution:8551
       --execution-jwt=/jwtsecret
-      --checkpoint-sync-url=https://sepolia.beaconstate.ethstaker.cc
+      --checkpoint-sync-url=https://checkpoint-sync.ephemery.ethpandaops.io
       --http
       --http-address=0.0.0.0
       --metrics
@@ -533,7 +533,7 @@ Instrument your RPC health-check scripts with OpenTelemetry so every probe creat
          │                 │                 │
          └─────────────────┼─────────────────┘
                            │
-                  Ethereum Sepolia Network
+                  Ethereum Ephemery Network
                            │
              ┌─────────────┴─────────────┐
           Prometheus                   Loki

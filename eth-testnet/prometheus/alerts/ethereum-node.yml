@@ -1,0 +1,106 @@
+groups:
+  - name: ethereum-node-availability
+    rules:
+      - alert: ExecutionMetricsTargetDown
+        expr: up{job="nethermind"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          service: execution
+        annotations:
+          summary: "Nethermind metrics target is down"
+          description: "Prometheus has failed to scrape Nethermind for 5 minutes."
+
+      - alert: ConsensusMetricsTargetDown
+        expr: up{job="lighthouse"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          service: consensus
+        annotations:
+          summary: "Lighthouse metrics target is down"
+          description: "Prometheus has failed to scrape Lighthouse for 5 minutes."
+
+      - alert: HostMetricsTargetDown
+        expr: up{job=~"node-exporter|cadvisor"} == 0
+        for: 10m
+        labels:
+          severity: warning
+          service: host
+        annotations:
+          summary: "Host monitoring target is down"
+          description: "Prometheus has failed to scrape {{ $labels.job }} for 10 minutes."
+
+  - name: ethereum-node-peers
+    rules:
+      - alert: NethermindNoSyncPeers
+        expr: sum by (instance) (nethermind_sync_peers{job="nethermind"}) < 1
+        for: 15m
+        labels:
+          severity: warning
+          service: execution
+        annotations:
+          summary: "Nethermind has no sync peers"
+          description: "Nethermind has reported zero sync peers for 15 minutes."
+
+      - alert: LighthouseNoPeers
+        expr: sum by (instance) (sync_peers_per_status{job="lighthouse"}) < 1
+        for: 15m
+        labels:
+          severity: warning
+          service: consensus
+        annotations:
+          summary: "Lighthouse has no peers"
+          description: "Lighthouse has reported zero connected peers for 15 minutes."
+
+  - name: ethereum-node-storage
+    rules:
+      - alert: EthereumDataDiskFillingUp
+        expr: |
+          (
+            node_filesystem_avail_bytes{job="node-exporter", fstype!="", mountpoint=~"/mnt/ethereum|/rootfs/mnt/ethereum"}
+            /
+            node_filesystem_size_bytes{job="node-exporter", fstype!="", mountpoint=~"/mnt/ethereum|/rootfs/mnt/ethereum"}
+          ) < 0.15
+        for: 15m
+        labels:
+          severity: warning
+          service: storage
+        annotations:
+          summary: "Ethereum data volume is above 85% full"
+          description: "The mounted Ethereum data volume has less than 15% free space remaining."
+
+      - alert: EthereumDataDiskAlmostFull
+        expr: |
+          (
+            node_filesystem_avail_bytes{job="node-exporter", fstype!="", mountpoint=~"/mnt/ethereum|/rootfs/mnt/ethereum"}
+            /
+            node_filesystem_size_bytes{job="node-exporter", fstype!="", mountpoint=~"/mnt/ethereum|/rootfs/mnt/ethereum"}
+          ) < 0.05
+        for: 15m
+        labels:
+          severity: critical
+          service: storage
+        annotations:
+          summary: "Ethereum data volume is above 95% full"
+          description: "The mounted Ethereum data volume has less than 5% free space remaining."
+
+  - name: ethereum-node-containers
+    rules:
+      - alert: ComposeServiceRestarted
+        expr: |
+          sum by (container_label_com_docker_compose_service) (
+            changes(
+              container_start_time_seconds{
+                job="cadvisor",
+                container_label_com_docker_compose_service!=""
+              }[15m]
+            )
+          ) > 0
+        for: 2m
+        labels:
+          severity: warning
+          service: containers
+        annotations:
+          summary: "A Docker Compose service restarted"
+          description: "Service {{ $labels.container_label_com_docker_compose_service }} restarted within the last 15 minutes."

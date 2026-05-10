@@ -3,6 +3,8 @@ services:
     image: nethermind/nethermind:1.37.1
     container_name: nethermind
     restart: unless-stopped
+    env_file:
+      - ./ephemery/nodevars_env.txt
     ports:
       - "30303:30303/tcp"               # P2P
       - "30303:30303/udp"
@@ -10,10 +12,14 @@ services:
     # 8551 (Engine API) and 8008 (metrics)
     volumes:
       - ./data/nethermind:/data
+      - ./ephemery:/network:ro
       - ./jwtsecret:/jwtsecret:ro
     command: >
-      --config=sepolia
+      --config=none.json
       --datadir=/data
+      --Init.ChainSpecPath=/network/chainspec.json
+      --Network.Bootnodes=${NETHERMIND_BOOTNODES}
+      --Sync.SnapSync=true
       --JsonRpc.Enabled=true
       --JsonRpc.Host=0.0.0.0
       --JsonRpc.Port=8545
@@ -27,6 +33,8 @@ services:
     image: sigp/lighthouse:v8.1.3
     container_name: lighthouse
     restart: unless-stopped
+    env_file:
+      - ./ephemery/nodevars_env.txt
     ports:
       - "9000:9000/tcp"                 # P2P
       - "9000:9000/udp"
@@ -34,14 +42,16 @@ services:
     # 5054 (metrics)
     volumes:
       - ./data/lighthouse:/data
+      - ./ephemery:/network:ro
       - ./jwtsecret:/jwtsecret:ro
     command: >
       lighthouse bn
-      --network=sepolia
+      --testnet-dir=/network
       --datadir=/data
       --execution-endpoint=http://execution:8551
       --execution-jwt=/jwtsecret
-      --checkpoint-sync-url=https://checkpoint-sync.sepolia.ethpandaops.io
+      --boot-nodes=${BOOTNODE_ENR_LIST}
+      --checkpoint-sync-url=https://checkpoint-sync.ephemery.ethpandaops.io
       --http
       --http-address=0.0.0.0
       --metrics
@@ -56,6 +66,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts:/etc/prometheus/alerts:ro
       - prometheus-data:/prometheus
     ports:
       - "127.0.0.1:9090:9090"           # UI

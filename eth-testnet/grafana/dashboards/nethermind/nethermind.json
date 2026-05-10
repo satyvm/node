@@ -9728,19 +9728,15 @@
       },
       {
         "current": {
-          "text": [
-            "AMB_DappNode_Mainnet"
-          ],
-          "value": [
-            "AMB_DappNode_Mainnet"
-          ]
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": {
           "type": "prometheus",
           "uid": "prometheus"
         },
         "definition": "label_values({Network=~\"$network\"},Instance)",
-        "includeAll": false,
+        "includeAll": true,
         "label": "Instance",
         "multi": true,
         "name": "enode",

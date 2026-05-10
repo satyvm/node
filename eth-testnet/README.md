@@ -1,6 +1,6 @@
-# Ethereum Sepolia Testnet Node
+# Ethereum Ephemery Testnet Node
 
-Small AWS deployment for a Sepolia node with:
+Small AWS deployment for an Ephemery node with:
 
 - Nethermind for execution
 - Lighthouse for consensus
@@ -11,7 +11,7 @@ Small AWS deployment for a Sepolia node with:
 
 `make deploy` provisions the EC2 infrastructure with Terraform, copies this repo to the instance, generates the JWT secret if needed, and starts the Docker Compose stack on the server.
 
-The node runs on Sepolia and exposes only the P2P ports publicly. RPC and dashboards stay bound to `127.0.0.1` on the host.
+The node runs on Ephemery and exposes only the P2P ports publicly. RPC and dashboards stay bound to `127.0.0.1` on the host.
 
 ## Quick Start
 
