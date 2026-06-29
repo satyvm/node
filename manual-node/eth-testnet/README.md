@@ -11,20 +11,25 @@ This repository provides a robust, production-ready project designed to easily d
 This project is fully containerized and heavily automated. The node runs on Ephemery and exposes only the P2P ports publicly. RPC and dashboards stay bound to `127.0.0.1` on the host.
 
 ### 1. The Core Node
-*   **Execution Client:** [Nethermind](https://nethermind.io/). Fast, C#-based client configured here with Snap Sync for rapid chain synchronization.
-*   **Consensus Client:** [Lighthouse](https://lighthouse.sigp.io/). Rust-based client configured to use checkpoint sync from trusted Ephemery endpoints.
+
+- **Execution Client:** [Nethermind](https://nethermind.io/). Fast, C#-based client configured here with Snap Sync for rapid chain synchronization.
+- **Consensus Client:** [Lighthouse](https://lighthouse.sigp.io/). Rust-based client configured to use checkpoint sync from trusted Ephemery endpoints.
 
 ### 2. The Automation Engine
+
 Ephemery networks "die" and reset periodically. This repository includes a bespoke script (`prepare_ephemery.sh`) that:
-*   Downloads the latest Ephemery network bundle (genesis states, bootnodes, configs).
-*   Automatically detects if the network has undergone a reset.
-*   Clears out old Nethermind/Lighthouse data and restarts the node dynamically on the new iteration.
+
+- Downloads the latest Ephemery network bundle (genesis states, bootnodes, configs).
+- Automatically detects if the network has undergone a reset.
+- Clears out old Nethermind/Lighthouse data and restarts the node dynamically on the new iteration.
 
 ### 3. The Observability Stack
+
 Visibility is critical when running blockchain infrastructure. This project provisions:
-*   **Prometheus & Alertmanager:** For scraping metrics and routing critical alerts (e.g., node desync, disk space warnings) directly to Discord.
-*   **Grafana & Tempo:** Dashboards for visualizing node health, P2P network peers, and host system metrics.
-*   **cAdvisor & Node Exporter:** For granular container and host machine hardware metrics.
+
+- **Prometheus & Alertmanager:** For scraping metrics and routing critical alerts (e.g., node desync, disk space warnings) directly to Discord.
+- **Grafana & Tempo:** Dashboards for visualizing node health, P2P network peers, and host system metrics.
+- **cAdvisor & Node Exporter:** For granular container and host machine hardware metrics.
 
 All of this is provisioned automatically on an AWS EC2 instance using **Terraform** and **Docker Compose**, orchestrated elegantly through a `Makefile`.
 
@@ -52,9 +57,10 @@ cp .env.example .env
 ```
 
 Open the `.env` file in your favorite text editor and fill in the required details:
-*   `DISCORD_WEBHOOK_URL`: (Optional but recommended) Paste your Discord webhook to receive Alertmanager notifications.
-*   `SSH_KEY`: The absolute path to your private SSH key (e.g., `~/.ssh/id_rsa`).
-*   `GF_ADMIN_PASSWORD`: Choose a secure password to access your Grafana dashboard (defaults to `admin123`).
+
+- `DISCORD_WEBHOOK_URL`: (Optional but recommended) Paste your Discord webhook to receive Alertmanager notifications.
+- `SSH_KEY`: The absolute path to your private SSH key (e.g., `~/.ssh/id_rsa`).
+- `GF_ADMIN_PASSWORD`: Choose a secure password to access your Grafana dashboard (defaults to `admin123`).
 
 ### Step 2: Deploy the Infrastructure
 
@@ -65,6 +71,7 @@ make deploy
 ```
 
 **What happens here?**
+
 1. Terraform creates a new AWS EC2 instance and configures the necessary Security Groups. It explicitly exposes P2P ports (`30303` for Nethermind, `9000` for Lighthouse) to the public web but restricts RPC and dashboard ports to `127.0.0.1` for security.
 2. The deployment script copies the project files to the EC2 instance.
 3. A secure JWT secret is generated to authenticate communication between Nethermind and Lighthouse.
@@ -83,6 +90,7 @@ make sync-status
 ```
 
 If you need to dive deeper into the logs:
+
 ```bash
 make logs-execution   # View Nethermind logs
 make logs-consensus   # View Lighthouse logs
@@ -123,6 +131,7 @@ make destroy          # Tears down the AWS infrastructure via Terraform
 ## 🔌 Useful Endpoints
 
 **On the EC2 host:**
+
 - `localhost:8545` - Nethermind JSON-RPC
 - `localhost:5052` - Lighthouse beacon API
 - `localhost:9090` - Prometheus
@@ -131,6 +140,7 @@ make destroy          # Tears down the AWS infrastructure via Terraform
 - `localhost:3200` - Tempo
 
 **Public peer-to-peer ports:**
+
 - `30303/tcp,udp` - Nethermind
 - `9000/tcp,udp` - Lighthouse
 
@@ -155,10 +165,12 @@ make destroy          # Tears down the AWS infrastructure via Terraform
 This project has been successfully deployed and verified. Below are snapshots demonstrating the healthy state of the node and the network architecture:
 
 ### Network Architecture
+
 You can view the detailed network architecture diagram here: [Network Architecture Diagram](./network.excalidraw)
 ![Network Architecture](./network_architecture.png)
 
 ### Node Status & Sync
+
 - **Docker Status (`make status`)**
   ![Docker Containers Status](./pow/ephemery/1_status.png)
 
@@ -169,6 +181,7 @@ You can view the detailed network architecture diagram here: [Network Architectu
   ![Nethermind Logs](./pow/ephemery/5_execution_logs.png)
 
 ### Dashboards & Observability
+
 - **Nethermind Execution Dashboard**
   ![Nethermind Grafana](./pow/ephemery/3_grafana_nethermind.png)
 

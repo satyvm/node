@@ -3,6 +3,7 @@
 A fully containerized SRE simulation environment deploying a standalone Ethereum-compatible blockchain node (`anvil`) instrumented with a full Prometheus observability stack.
 
 This project demonstrates core Site Reliability Engineering competencies:
+
 - **Automation:** Docker Compose and Makefile deployment
 - **Measurement:** Prometheus host and application-level metric scraping
 - **Visualization:** Pre-provisioned Grafana dashboards
@@ -11,7 +12,7 @@ This project demonstrates core Site Reliability Engineering competencies:
 
 ## Architecture
 
-Our lab is fully contained within a Docker network, making it highly portable. 
+Our lab is fully contained within a Docker network, making it highly portable.
 It consists of:
 
 1. **`blockchain-node`**: Runs `anvil`, exposing JSON-RPC on port `8545`.
@@ -37,6 +38,7 @@ It consists of:
    ```
 
 ### Ports
+
 - `3000`: Grafana UI (Login: `admin` / `admin`)
 - `9090`: Prometheus UI
 - `9093`: Alertmanager UI
@@ -47,16 +49,20 @@ It consists of:
 We provide commands to intentionally disrupt the environment and test the alerting rules and Docker restart policies.
 
 **Crash the Blockchain Node**
+
 ```bash
 make crash-node
 ```
-*Expected Behavior:* The Docker daemon will auto-restart the container within seconds. If it stays down, Prometheus will fire `NodeProcessDown` and `RPCEndpointDown` after 1 minute.
+
+_Expected Behavior:_ The Docker daemon will auto-restart the container within seconds. If it stays down, Prometheus will fire `NodeProcessDown` and `RPCEndpointDown` after 1 minute.
 
 **Simulate High CPU Load**
+
 ```bash
 make stress-cpu
 ```
-*Expected Behavior:* Spikes metrics. Prometheus will fire a `HighCPUUsage` alert if it sustains for 5 minutes.
+
+_Expected Behavior:_ Spikes metrics. Prometheus will fire a `HighCPUUsage` alert if it sustains for 5 minutes.
 
 ## Long-term Deployment (Coolify)
 

@@ -50,4 +50,4 @@ storage:
 stream_over_http_enabled: true
 
 overrides:
-  metrics_generator_processors: [ "local-blocks", "span-metrics" ]
+  metrics_generator_processors: ["local-blocks", "span-metrics"]

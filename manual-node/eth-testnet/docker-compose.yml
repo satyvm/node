@@ -6,9 +6,9 @@ services:
     env_file:
       - ./ephemery/nodevars_env.txt
     ports:
-      - "30303:30303/tcp"               # P2P
+      - "30303:30303/tcp" # P2P
       - "30303:30303/udp"
-      - "127.0.0.1:8545:8545"           # RPC
+      - "127.0.0.1:8545:8545" # RPC
     # 8551 (Engine API) and 8008 (metrics)
     volumes:
       - ./data/nethermind:/data
@@ -36,9 +36,9 @@ services:
     env_file:
       - ./ephemery/nodevars_env.txt
     ports:
-      - "9000:9000/tcp"                 # P2P
+      - "9000:9000/tcp" # P2P
       - "9000:9000/udp"
-      - "127.0.0.1:5052:5052"          # Beacon API
+      - "127.0.0.1:5052:5052" # Beacon API
     # 5054 (metrics)
     volumes:
       - ./data/lighthouse:/data
@@ -69,17 +69,17 @@ services:
       - ./prometheus/alerts:/etc/prometheus/alerts:ro
       - prometheus-data:/prometheus
     ports:
-      - "127.0.0.1:9090:9090"           # UI
+      - "127.0.0.1:9090:9090" # UI
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.enable-remote-write-receiver'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-remote-write-receiver"
 
   tempo:
     image: grafana/tempo:2.10.5
     container_name: tempo
     restart: unless-stopped
-    command: [ "-config.file=/etc/tempo.yaml" ]
+    command: ["-config.file=/etc/tempo.yaml"]
     volumes:
       - ./tempo/tempo.yaml:/etc/tempo.yaml:ro
       - tempo-data:/var/tempo
@@ -110,18 +110,18 @@ services:
       - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
       - alertmanager-data:/alertmanager
     command:
-      - '--config.file=/etc/alertmanager/alertmanager.yml'
-      - '--storage.path=/alertmanager'
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
 
   node-exporter:
     image: prom/node-exporter:v1.11.1
     container_name: node-exporter
     restart: unless-stopped
     command:
-      - '--path.procfs=/host/proc'
-      - '--path.rootfs=/rootfs'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - "--path.procfs=/host/proc"
+      - "--path.rootfs=/rootfs"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -133,12 +133,12 @@ services:
     restart: unless-stopped
     privileged: true
     command:
-      - '--docker_only=true'
-      - '--store_container_labels=true'
-      - '--disable_root_cgroup_stats=true'
-      - '--housekeeping_interval=30s'
-      - '--docker=unix:///var/run/docker.sock'
-      - '--raw_cgroup_prefix_whitelist=/docker/'
+      - "--docker_only=true"
+      - "--store_container_labels=true"
+      - "--disable_root_cgroup_stats=true"
+      - "--housekeeping_interval=30s"
+      - "--docker=unix:///var/run/docker.sock"
+      - "--raw_cgroup_prefix_whitelist=/docker/"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run

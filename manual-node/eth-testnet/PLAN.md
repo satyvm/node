@@ -1,4 +1,3 @@
-
 # Blockchain SRE Project — Complete Build Guide
 
 ---
@@ -25,14 +24,14 @@ The goal is to build a production-grade blockchain node infrastructure that demo
 
 ### Security Group
 
-| Port | Protocol | Source | Purpose |
-|---|---|---|---|
-| 22 | TCP | Your IP only | SSH |
-| 30303 | TCP+UDP | 0.0.0.0/0 | Nethermind P2P |
-| 9000 | TCP+UDP | 0.0.0.0/0 | Lighthouse P2P |
-| 8551 | TCP | Internal only | Engine API — never expose publicly |
-| 8545 | TCP | Your IP only | RPC endpoint |
-| 8008 | TCP | Internal only | Nethermind metrics |
+| Port  | Protocol | Source        | Purpose                            |
+| ----- | -------- | ------------- | ---------------------------------- |
+| 22    | TCP      | Your IP only  | SSH                                |
+| 30303 | TCP+UDP  | 0.0.0.0/0     | Nethermind P2P                     |
+| 9000  | TCP+UDP  | 0.0.0.0/0     | Lighthouse P2P                     |
+| 8551  | TCP      | Internal only | Engine API — never expose publicly |
+| 8545  | TCP      | Your IP only  | RPC endpoint                       |
+| 8008  | TCP      | Internal only | Nethermind metrics                 |
 
 ### Storage Configuration
 
@@ -144,13 +143,13 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'nethermind'
+  - job_name: "nethermind"
     static_configs:
-      - targets: ['execution:8008']
+      - targets: ["execution:8008"]
 
-  - job_name: 'lighthouse'
+  - job_name: "lighthouse"
     static_configs:
-      - targets: ['consensus:5054']
+      - targets: ["consensus:5054"]
 ```
 
 ```bash
@@ -431,26 +430,31 @@ docker pull gaiaadm/pumba
 ### Experiments
 
 **Kill a random node container:**
+
 ```bash
 pumba kill --interval 30s re2:ethereum_node.*
 ```
 
 **Add network latency:**
+
 ```bash
 pumba netem --duration 1m delay --time 200 nethermind
 ```
 
 **Simulate packet loss:**
+
 ```bash
 pumba netem --duration 1m loss --percent 30 lighthouse
 ```
 
 **Exhaust disk space:**
+
 ```bash
 stress-ng --hdd 1 --hdd-bytes 280G --timeout 60s
 ```
 
 **CPU throttling:**
+
 ```bash
 stress-ng --cpu 2 --timeout 60s
 ```
@@ -497,20 +501,20 @@ This becomes a **Node on Demand** system — `terraform apply` deploys a fully c
 
 ## Phase 11: Distributed Tracing
 
-Metrics tell you *what* broke. Traces tell you *where* and *why*.
+Metrics tell you _what_ broke. Traces tell you _where_ and _why_.
 
 Add Tempo to your compose stack:
 
 ```yaml
-  tempo:
-    image: grafana/tempo:latest
-    container_name: tempo
-    ports:
-      - "3200:3200"
-      - "4317:4317"    # OTLP gRPC
-    volumes:
-      - ./tempo.yml:/etc/tempo.yml
-    command: -config.file=/etc/tempo.yml
+tempo:
+  image: grafana/tempo:latest
+  container_name: tempo
+  ports:
+    - "3200:3200"
+    - "4317:4317" # OTLP gRPC
+  volumes:
+    - ./tempo.yml:/etc/tempo.yml
+  command: -config.file=/etc/tempo.yml
 ```
 
 Instrument your RPC health-check scripts with OpenTelemetry so every probe creates a trace. In Grafana you can then correlate: metric spike → find the exact trace → see which component was slow. This is the difference between monitoring and full observability.
@@ -556,13 +560,13 @@ Chaos Layer (runs independently):
 
 ## Build Roadmap
 
-| Phase | What You Build | Key Outcome |
-|---|---|---|
-| 1–4 | Node + Docker + systemd | Working synced node |
-| 5 | Security hardening + EBS snapshots | Production-safe baseline |
-| 6 | SLOs + error budgets + burn rate alerts | SRE mindset established |
-| 7 | HAProxy HA cluster | Zero downtime failover |
-| 8 | Reorg detection + RPC abuse + rate limiting | Blockchain-specific depth |
-| 9 | Chaos engineering + GameDay runbooks | Validated reliability |
-| 10 | Terraform module | Reproducible at scale |
-| 11 | OpenTelemetry + Tempo | Full observability |
+| Phase | What You Build                              | Key Outcome               |
+| ----- | ------------------------------------------- | ------------------------- |
+| 1–4   | Node + Docker + systemd                     | Working synced node       |
+| 5     | Security hardening + EBS snapshots          | Production-safe baseline  |
+| 6     | SLOs + error budgets + burn rate alerts     | SRE mindset established   |
+| 7     | HAProxy HA cluster                          | Zero downtime failover    |
+| 8     | Reorg detection + RPC abuse + rate limiting | Blockchain-specific depth |
+| 9     | Chaos engineering + GameDay runbooks        | Validated reliability     |
+| 10    | Terraform module                            | Reproducible at scale     |
+| 11    | OpenTelemetry + Tempo                       | Full observability        |

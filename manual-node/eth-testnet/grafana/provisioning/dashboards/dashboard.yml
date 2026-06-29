@@ -1,27 +1,27 @@
 apiVersion: 1
 
 providers:
-  - name: 'Nethermind'
+  - name: "Nethermind"
     orgId: 1
-    folder: 'Ethereum / Execution'
+    folder: "Ethereum / Execution"
     type: file
     disableDeletion: false
     updateIntervalSeconds: 10
     options:
       path: /etc/grafana/dashboards/nethermind
 
-  - name: 'Lighthouse'
+  - name: "Lighthouse"
     orgId: 1
-    folder: 'Ethereum / Consensus'
+    folder: "Ethereum / Consensus"
     type: file
     disableDeletion: false
     updateIntervalSeconds: 10
     options:
       path: /etc/grafana/dashboards/lighthouse
 
-  - name: 'System'
+  - name: "System"
     orgId: 1
-    folder: 'System'
+    folder: "System"
     type: file
     disableDeletion: false
     updateIntervalSeconds: 10

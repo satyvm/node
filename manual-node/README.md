@@ -5,13 +5,17 @@ This repository is a comprehensive laboratory for Blockchain Site Reliability En
 ## 🚀 Projects
 
 ### 1. [Anvil SRE Simulation](./anvil)
+
 A fully containerized laboratory for practicing SRE fundamentals using a local Ethereum-compatible node (`anvil`).
+
 - **Focus:** Automation, Measurement, Visualization, and Incident Response.
 - **Tech Stack:** Docker Compose, Prometheus, Grafana, Alertmanager, Anvil.
 - **Key Features:** Pre-provisioned dashboards, simulated failure scenarios (node crashes, high CPU), and a custom RPC health checker.
 
 ### 2. [Ethereum Testnet (Ephemery) Deployment](./eth-testnet)
+
 A production-ready infrastructure-as-code setup for deploying a full Ethereum node on AWS.
+
 - **Focus:** Scalability, Reliability, and Ephemeral Network management.
 - **Tech Stack:** Terraform, AWS (EC2/EBS), Docker, Nethermind (Execution), Lighthouse (Consensus), Prometheus, Grafana, Tempo.
 - **Key Features:** Automated Ephemery network resets, SSH tunneling for secure monitoring, checkpoint sync for rapid startup, and distributed tracing.
@@ -19,6 +23,7 @@ A production-ready infrastructure-as-code setup for deploying a full Ethereum no
 ---
 
 ## 🛠️ Core SRE Principles Demonstrated
+
 - **Infrastructure as Code (IaC):** Using Terraform for reproducible AWS environments.
 - **Observability:** Full-stack monitoring with Prometheus, Grafana, and Tempo.
 - **Automated Operations:** Makefile-driven workflows for deployment and management.
