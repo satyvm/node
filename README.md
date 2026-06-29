@@ -1,45 +1,127 @@
-# ⛓️ Blockchain SRE & Infrastructure Lab
+# node-app
 
-This repository is a comprehensive laboratory for Blockchain Site Reliability Engineering (SRE) and Infrastructure. It contains two main projects designed to take you from local simulations to production-grade cloud deployments.
+This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines React, TanStack Router, Hono, TRPC, and more.
 
-## 🚀 Projects
+## Features
 
-### 1. [Anvil SRE Simulation](./anvil)
-A fully containerized laboratory for practicing SRE fundamentals using a local Ethereum-compatible node (`anvil`).
-- **Focus:** Automation, Measurement, Visualization, and Incident Response.
-- **Tech Stack:** Docker Compose, Prometheus, Grafana, Alertmanager, Anvil.
-- **Key Features:** Pre-provisioned dashboards, simulated failure scenarios (node crashes, high CPU), and a custom RPC health checker.
+- **TypeScript** - For type safety and improved developer experience
+- **TanStack Router** - File-based routing with full type safety
+- **TailwindCSS** - Utility-first CSS for rapid UI development
+- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
+- **Hono** - Lightweight, performant server framework
+- **tRPC** - End-to-end type-safe APIs
+- **Bun** - Runtime environment
+- **Drizzle** - TypeScript-first ORM
+- **PostgreSQL** - Database engine
+- **Authentication** - Better-Auth
+- **Vite+** - Unified Vite toolchain, workspace task runner, linting, and formatting
 
-### 2. [Ethereum Testnet (Ephemery) Deployment](./eth-testnet)
-A production-ready infrastructure-as-code setup for deploying a full Ethereum node on AWS.
-- **Focus:** Scalability, Reliability, and Ephemeral Network management.
-- **Tech Stack:** Terraform, AWS (EC2/EBS), Docker, Nethermind (Execution), Lighthouse (Consensus), Prometheus, Grafana, Tempo.
-- **Key Features:** Automated Ephemery network resets, SSH tunneling for secure monitoring, checkpoint sync for rapid startup, and distributed tracing.
+## Getting Started
 
----
-
-## 🛠️ Core SRE Principles Demonstrated
-- **Infrastructure as Code (IaC):** Using Terraform for reproducible AWS environments.
-- **Observability:** Full-stack monitoring with Prometheus, Grafana, and Tempo.
-- **Automated Operations:** Makefile-driven workflows for deployment and management.
-- **Resilience:** Health checks, restart policies, and chaos engineering experiments.
-- **Security:** Secure RPC handling, JWT authentication between clients, and firewall configurations.
-
----
-
-## 📂 Repository Structure
+First, install the dependencies:
 
 ```bash
-.
-├── anvil/           # Local SRE simulation environment
-└── eth-testnet/     # Production-ready AWS deployment for Ephemery
+bun install
 ```
 
----
+## Database Setup
 
-## 🏁 Getting Started
+This project uses PostgreSQL with Drizzle ORM.
 
-Depending on your goal, navigate to one of the project subdirectories:
+1. Make sure you have a PostgreSQL database set up.
+2. Update your `apps/server/.env` file with your PostgreSQL connection details.
 
-- To learn SRE basics in a safe, local environment: **[Go to Anvil Lab](./anvil)**
-- To deploy a real Ethereum node to the cloud: **[Go to Ethereum Testnet](./eth-testnet)**
+3. Apply the schema to your database:
+
+```bash
+bun run db:push
+```
+
+Then, run the development server:
+
+```bash
+bun run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser to see the web application.
+The API is running at [http://localhost:3000](http://localhost:3000).
+
+## UI Customization
+
+React web apps in this stack share shadcn/ui primitives through `packages/ui`.
+
+- Change design tokens and global styles in `packages/ui/src/styles/globals.css`
+- Update shared primitives in `packages/ui/src/components/*`
+- Adjust shadcn aliases or style config in `packages/ui/components.json` and `apps/web/components.json`
+
+### Add more shared components
+
+Run this from the project root to add more primitives to the shared UI package:
+
+```bash
+npx shadcn@latest add accordion dialog popover sheet table -c packages/ui
+```
+
+Import shared components like this:
+
+```tsx
+import { Button } from "@node-app/ui/components/button";
+```
+
+### Add app-specific blocks
+
+If you want to add app-specific blocks instead of shared primitives, run the shadcn CLI from `apps/web`.
+
+## Deployment
+
+### Docker Compose
+
+- Target: web + server
+- Config: `docker-compose.yml` (app Dockerfiles live in `apps/*/Dockerfile`)
+- Build images: bun run docker:build
+- Start: bun run docker:up
+- Logs: bun run docker:logs
+- Stop: bun run docker:down
+
+Environment variables are read from each app's `.env` file (baked into web builds for public variables) and overridden in `docker-compose.yml` for container networking.
+
+## Git Hooks and Formatting
+
+- Optional native Vite+ hooks: `bun run hooks:setup`
+- Docs: [Vite+ commit hooks](https://viteplus.dev/guide/commit-hooks)
+- Run checks: `bun run check`
+
+## Project Structure
+
+```
+node-app/
+├── apps/
+│   ├── web/         # Frontend application (React + TanStack Router)
+│   └── server/      # Backend API (Hono, TRPC)
+├── packages/
+│   ├── ui/          # Shared shadcn/ui components and styles
+│   ├── api/         # API layer / business logic
+│   ├── auth/        # Authentication configuration & logic
+│   └── db/          # Database schema & queries
+```
+
+## Available Scripts
+
+- `bun run dev`: Start all applications in development mode
+- `bun run build`: Build all applications
+- `bun run dev:web`: Start only the web application
+- `bun run dev:server`: Start only the server
+- `bun run check-types`: Check TypeScript types across all apps
+- `bun run db:push`: Push schema changes to database
+- `bun run db:generate`: Generate database client/types
+- `bun run db:migrate`: Run database migrations
+- `bun run db:studio`: Open database studio UI
+- `bun run check`: Run Vite+ format/lint checks and workspace TypeScript checks
+- `bun run lint`: Run Vite+ lint checks
+- `bun run format`: Run Vite+ formatting
+- `bun run staged`: Run Vite+ checks against staged files
+- `bun run hooks:setup`: Install Vite+ native Git hooks with `vp config`
+- `bun run docker:build`: Build the Docker Compose images
+- `bun run docker:up`: Build and start the Docker Compose stack
+- `bun run docker:logs`: Tail logs from the Docker Compose stack
+- `bun run docker:down`: Stop the Docker Compose stack
