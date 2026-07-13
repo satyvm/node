@@ -44,6 +44,7 @@
       "dependencies": {
         "@hookform/resolvers": "^5.2.2",
         "@node-app/api": "workspace:*",
+        "@node-app/auth": "workspace:*",
         "@node-app/env": "workspace:*",
         "@node-app/ui": "workspace:*",
         "@tailwindcss/vite": "^4.3.1",

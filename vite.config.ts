@@ -10,6 +10,7 @@ export default defineConfig({
       "apps/web/src/routeTree.gen.ts",
       "apps/server/dist/**",
       "packages/db/dist/**",
+      "manual-node/**",
     ],
     options: {
       typeAware: false,
@@ -25,6 +26,7 @@ export default defineConfig({
       "apps/web/src/routeTree.gen.ts",
       "apps/server/dist/**",
       "packages/db/dist/**",
+      "manual-node/**",
     ],
     singleQuote: false,
     semi: true,

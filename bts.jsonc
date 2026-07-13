@@ -27,5 +27,5 @@
   "dbSetup": "docker",
   "api": "trpc",
   "webDeploy": "docker",
-  "serverDeploy": "docker"
+  "serverDeploy": "docker",
 }

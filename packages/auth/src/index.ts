@@ -10,16 +10,41 @@ export function createAuth() {
   return betterAuth({
     database: drizzleAdapter(db, {
       provider: "pg",
-
       schema: schema,
     }),
     trustedOrigins: [env.CORS_ORIGIN],
     emailAndPassword: {
       enabled: true,
     },
+    user: {
+      additionalFields: {
+        isApproved: {
+          type: "boolean",
+          defaultValue: false,
+          input: false,
+        },
+      },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          before: async (user, ctx) => {
+            if (ctx?.query?.invitecode === env.INVITE_CODE) {
+              return {
+                data: {
+                  ...user,
+                  isApproved: true,
+                },
+              };
+            }
+          },
+        },
+      },
+    },
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     advanced: {
+      cookiePrefix: "node-satyvm",
       defaultCookieAttributes: {
         sameSite: "none",
         secure: true,
